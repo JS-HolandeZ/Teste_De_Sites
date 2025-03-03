@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Câmera no Android</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        input[type="file"] {
+            display: none; /* Oculta os inputs */
+        }
+        #preview {
+            margin-top: 20px;
+            max-width: 100%;
+            display: none;
+            border: 2px solid #000;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Escolha um arquivo ou tire uma foto</h2>
+
+    <!-- Botão para escolher arquivo -->
+    <button onclick="document.getElementById('fileInput').click()">Escolher Arquivo</button>
+    <input type="file" id="fileInput">
+
+    <!-- Botão para abrir a câmera -->
+    <button onclick="document.getElementById('cameraInput').click()">Abrir Câmera</button>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment">
+
+    <!-- Exibir imagem capturada -->
+    <img id="preview" alt="Prévia da Foto">
+
+    <script>
+        // Captura o arquivo escolhido
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert('Arquivo selecionado: ' + file.name);
+            }
+        });
+
+        // Captura a foto tirada pela câmera e exibe na tela
+        document.getElementById('cameraInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                alert('Foto capturada: ' + file.name);
+                
+                // Criar prévia da foto
+                const imgPreview = document.getElementById('preview');
+                imgPreview.src = URL.createObjectURL(file);
+                imgPreview.style.display = 'block';
+            }
+        });
+    </script>
+
+</body>
+</html>
