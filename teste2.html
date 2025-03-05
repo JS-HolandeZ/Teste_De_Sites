@@ -1,61 +1,494 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload para Firebase</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+   
 
 </head>
-<body>
+<body class="bg-gray-100">
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
     
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">Enviar</button>
-    <progress id="progressBar" value="0" max="100"></progress>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPa-Li9DnP8pLzHP4qFioHIKQsmS7lWT8",
+            authDomain: "testeimg-636f4.firebaseapp.com",
+            projectId: "testeimg-636f4",
+            storageBucket: "testeimg-636f4.appspot.com",  // Corrigido domínio do storage
+            messagingSenderId: "826924293998",
+            appId: "1:826924293998:web:a3b9eef07b0e594b332b7f",
+            measurementId: "G-R20QNB4QMS"
+        };
+    
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+    
+        function uploadImage() {
+            const fileInput = document.getElementById("cameraInput"); // Usando o ID correto
+    
+            if (!fileInput || !fileInput.files.length) {
+                alert("Selecione um arquivo antes de fazer o upload!");
+                return;
+            }
+    
+            const file = fileInput.files[0]; 
+            console.log("Arquivo selecionado:", file.name);
+    
+            const storageRef = ref(storage, `images/${file.name}`);
+    
+            uploadBytes(storageRef, file)
+                .then(snapshot => {
+                    console.log("Upload realizado com sucesso:", snapshot);
+                    return getDownloadURL(snapshot.ref);
+                })
+                .then(url => {
+                    console.log("Download URL:", url);
+                    alert("Upload concluído!");
+                })
+                .catch(error => {
+                    console.error("Erro no upload:", error);
+                    alert("Erro ao fazer upload. Verifique o console.");
+                });
+        }
+    </script>
+    
+
+    <div class="flex h-screen relative">
+
+        <!-- Botão de Menu (Hamburguer) -->
+        <button id="menuBtn" class="fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded-md md:hidden">
+            ☰
+        </button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-0 w-64 bg-gray-800 text-white flex flex-col p-4 space-y-4 transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-40">
+          
+            <h2 class="text-xl font-bold"> &nbsp; &nbsp;  &nbsp; Dashboard</h2>
+            <nav class="flex flex-col space-y-2">
+                <a href="#" class="p-2 bg-gray-700 rounded-md hover:bg-gray-600">🏠 Início</a>
+                <a href="#" class="p-2 bg-gray-700 rounded-md hover:bg-gray-600">📊 Estatísticas</a>
+                <a href="#" class="p-2 bg-gray-700 rounded-md hover:bg-gray-600">⚙ Configurações</a>
+                <button onclick="logout()" class="p-2 bg-red-600 rounded-md hover:bg-red-500 mt-auto">🚪 Sair</button>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main id="mainContent" class="flex-1 p-1 h-screen overflow-auto transition-all duration-300 z-10">
+
+            <div class="flex justify-between items-center bg-white p-4 shadow-md rounded-lg" style="text-align: center;">
+                <h1 class="text-2xl font-bold" > &nbsp; &nbsp; &nbsp; Bem-vindo, <span id="username">Usuário</span>!</h1>
+            </div>
+
+            <div class="bg-white p-6 shadow-md rounded-lg mt-6">
+                <h2 class="text-xl font-bold">📌 Últimos Registros</h2>
+                <ul class="mt-2 space-y-3">
+                    <li class="p-6 bg-gray-200 rounded-md cursor-pointer text-center" data-modal-target="default-modal" data-modal-toggle="default-modal">
+                        ✅ Tarefa 1 concluída
+                    </li>
+                    
+                    <li class="p-6 bg-gray-200 rounded-md" style="text-align: center;">⚠ Erro no sistema corrigido</li>
+                    <li class="p-6 bg-gray-200 rounded-md" style="text-align: center;">📩 Novo feedback recebido</li>
+                </ul>
+            </div>
+        </main>
+
+        <!-- Overlay -->
+        <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30"></div>
+
+
+        
+        <!-- Main modal -->
+        <div id="default-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            <div class="relative p-4 w-full max-w-2xl max-h-full">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+                        
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                            Inserir Registro
+                        </h3>
+
+                        <button type="button" class="close-modal text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                            </svg>
+                            <span class="sr-only">Fechar modal</span>
+                        </button>
+                        
+                        
+
+
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="p-4 md:p-5 space-y-4">
+                        <!-- Botão para abrir a câmera -->
+                       
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment">
+                    
+                      
+                        
+                        <input type="text" id="fileNameInput" placeholder="Nome do arquivo"><br><br> 
+
+                          <!-- Container para exibir imagens carregadas -->
+                        <div id="previewContainer">
+                            
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- Modal footer -->
+                    <div class="flex justify-center items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600" style="align-items: center;">
+                        <button  type="button" id="select" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onclick="document.getElementById('cameraInput').click()">
+                            <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 5h-1.382l-.171-.342A2.985 2.985 0 0 0 14.764 3H9.236a2.984 2.984 0 0 0-2.683 1.658L6.382 5H5a3 3 0 0 0-3 3v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a3 3 0 0 0-3-3Zm-3.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"/>
+                            </svg>
+                        </button>         
+
+                        <div>
+
+                            <button  type="button" id="salvar_" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" onclick="uploadFile()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                  </svg>
+                                  
+                            </button> 
+
+                            <button  type="button" id="cancelar_" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800" onclick="clearPreviewContainer()">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                  </svg>
+                                  
+                                  
+                            </button> 
+                            
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+  
+
+    </div>
 
     <script>
-        // Configuração do Firebase
-       const firebaseConfig = {
-          apiKey: "AIzaSyCbQEtcUXT0bkeC-gleOK-QV6jijwifsWU",
-          authDomain: "testesimg.firebaseapp.com",
-          projectId: "testesimg",
-          storageBucket: "testesimg.firebasestorage.app",
-          messagingSenderId: "27606812722",
-          appId: "1:27606812722:web:d335991e69c2a2d3cc542b"
-        };
+        // Pegando elementos do DOM
+       const sidebar = document.getElementById("sidebar");
+        const menuBtn = document.getElementById("menuBtn");
+        const overlay = document.getElementById("overlay");
+
+        menuBtn.addEventListener("click", () => {
+            const isOpen = !sidebar.classList.contains("-translate-x-full");
+
+            if (isOpen) {
+                sidebar.classList.add("-translate-x-full");
+                overlay.classList.add("hidden");
+            } else {
+                sidebar.classList.remove("-translate-x-full");
+                overlay.classList.remove("hidden");
+            }
+        });
+
+        overlay.addEventListener("click", () => {
+            sidebar.classList.add("-translate-x-full");
+            overlay.classList.add("hidden");
+        });
+
+        // Função para fechar o menu clicando no overlay
+        overlay.addEventListener("click", () => {
+            sidebar.classList.add("-translate-x-full");
+            mainContent.classList.remove("ml-64");
+            mainContent.classList.remove("fixed");
+            overlay.classList.add("hidden");
+        });
+
+        // Recupera o nome do usuário do LocalStorage
+        const userLogado = localStorage.getItem("userLogado");
+        if (userLogado) {
+            document.getElementById("username").textContent = userLogado;
+        } else {
+            window.location.href = "index.html"; // Se não houver login, redireciona
+        }
+
+        // Função de logout
+        function logout() {
+            localStorage.removeItem("userLogado");
+            window.location.href = "index.html";
+        }
 
 
-        // Inicializando o Firebase
-        firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
+        function elements_modal(){
 
-        function uploadFile() {
-            const file = document.getElementById("fileInput").files[0];
+            const previewContainer = document.getElementById('previewContainer');
+            const btn_cancelar =   document.getElementById('cancelar_');
+            const btn_salvar  =     document.getElementById('salvar_');
+            const btn_select  =  document.getElementById('select');
+
+
+            if (previewContainer.querySelectorAll('img').length > 0) {
+
+                btn_salvar.style.display = "inline";
+                btn_cancelar.style.display = "inline";
+                btn_select.style.display = "none";
+            } else {
+                btn_salvar.style.display = "none";
+                btn_cancelar.style.display = "none";
+                btn_select.style.display = "inline";
+            }
+
+        }
+
+
+
+        // Modal
+      
+       
+        document.addEventListener("DOMContentLoaded", function () {
+            elements_modal(); 
+        const modal = document.getElementById("default-modal");
+        const openModalBtns = document.querySelectorAll("[data-modal-toggle='default-modal']");
+        const closeModalBtn = document.querySelector("#default-modal .close-modal");
+        const body = document.body;
+
+        // Verifica se já existe um backdrop, senão cria um
+        let backdrop = document.querySelector("div[modal-backdrop]");
+        if (!backdrop) {
+            backdrop = document.createElement("div");
+            backdrop.setAttribute("modal-backdrop", "");
+            backdrop.className = "bg-gray-900 bg-opacity-50 dark:bg-opacity-80 fixed inset-0 z-40 hidden";
+            document.body.appendChild(backdrop);
+        }
+
+        // Função para abrir o modal
+        function openModal() {
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            // Adiciona a classe overflow-hidden ao body
+            body.classList.add("overflow-hidden");
+
+            // Torna o backdrop visível
+            backdrop.classList.remove("hidden");
+        }
+
+        // Função para fechar o modal
+        function closeModal() {
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+
+            // Remove a classe overflow-hidden do body
+            body.classList.remove("overflow-hidden");
+
+            // Esconde o backdrop sem removê-lo
+            backdrop.classList.add("hidden");
+        }
+
+        // Adiciona evento de clique para abrir o modal
+        openModalBtns.forEach(btn => {
+            btn.addEventListener("click", openModal);
+        });
+
+        // Adiciona evento de clique para fechar o modal
+        closeModalBtn.addEventListener("click", closeModal);
+    });
+
+
+
+        // imagens adicionadas
+
+
+         // Função para mostrar pré-visualização de imagens
+
+        function clearPreviewContainer() {
+            const previewContainer = document.getElementById('previewContainer');
+           previewContainer.innerHTML = ''; // Limpa o conteúdo do container
+
+         // Atualiza a visibilidade dos botões
+           elements_modal();   
+        }
+
+        function salvar_Enviar() {
+
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = ''; // Limpa o conteúdo do container
+           
+           elements_modal();   
+        }
+
+
+
+
+
+
+
+
+
+
+    function showImagePreview(files) {
+        const previewContainer = document.getElementById('previewContainer');
+
+        // Limpa o container antes de adicionar novas imagens
+        previewContainer.innerHTML = '';
+
+        // Loop para exibir múltiplas imagens
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                const imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(file);
+                imgElement.classList.add('w-full', 'h-auto', 'max-h-96', 'object-contain');
+                previewContainer.appendChild(imgElement);
+            }
+        }
+        elements_modal();
+
+    }
+
+    // Captura a foto tirada pela câmera e exibe na tela
+    document.getElementById('cameraInput').addEventListener('change', function(event) {
+
+        
+
+        const files = event.target.files;
+        if (files.length > 0) {
+            showImagePreview(files);
+        }
+           const btn_cancelar =   document.getElementById('cancelar_');
+            const btn_salvar  =     document.getElementById('salvar_');
+            const btn_select  =  document.getElementById('select');
+            
+               btn_salvar.style.display = "inline";
+                btn_cancelar.style.display = "inline";
+                btn_select.style.display = "none";
+    });
+
+
+    const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/dwfmhuqaw/image/upload';
+        const cloudinaryUploadPreset = 'pasta2';  
+
+        async function uploadFile() {
+            const fileInput = document.getElementById("cameraInput");
+            let imageName = document.getElementById("fileNameInput").value.trim();
+            const file = fileInput.files[0];
+
             if (!file) {
                 alert("Selecione um arquivo!");
                 return;
             }
 
-            const storageRef = storage.ref("uploads/" + file.name);
-            const uploadTask = storageRef.put(file);
+            if (!imageName) {
+                alert("Digite um nome para o arquivo!");
+                return;
+            }
 
-            uploadTask.on("state_changed",
-                function(snapshot) {
-                    // Atualiza a barra de progresso
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    document.getElementById("progressBar").value = progress;
-                },
-                function(error) {
-                    console.error("Erro ao enviar:", error);
-                },
-                function() {
-                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-                        console.log("Arquivo disponível em:", downloadURL);
-                    });
+            // Remover espaços e caracteres especiais do nome do arquivo
+            imageName = imageName.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-_]/g, "");
+
+            // Criar um novo arquivo com o nome escolhido
+            const renamedFile = new File([file], imageName + "." + file.name.split('.').pop(), { type: file.type });
+
+            const formData = new FormData();
+            formData.append("file", renamedFile);
+            formData.append("upload_preset", cloudinaryUploadPreset);
+            formData.append("public_id", imageName); // Nome personalizado no Cloudinary
+
+            try {
+                const response = await fetch(cloudinaryUrl, {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.secure_url) {
+                    console.log("Imagem enviada com sucesso!", data);
+
+                    // Salva a URL e o nome do arquivo no LocalStorage
+                    localStorage.setItem("ultimaImagem", data.secure_url);
+                    localStorage.setItem("ultimoNome", imageName);
+
+                    // Exibe a URL no textarea
+                    document.getElementById("imageTextarea").value = data.secure_url;
+
+                    // Atualiza o nome no input
+                    document.getElementById("fileNameInput").value = imageName;
+
+                    // Exibe a imagem na página
+                    exibirImagem(data.secure_url);
+                } else {
+                    console.error("Erro ao enviar a imagem:", data);
                 }
-            );
+            } catch (error) {
+                console.error("Erro ao enviar:", error);
+            }
         }
+
+        // Função para exibir a imagem na página
+        function exibirImagem(url) {
+            const imgElement = document.getElementById("previewContainer");
+            imgElement.src = url;
+            imgElement.style.display = "block";
+        }
+
+        // Carregar última imagem salva ao abrir a página
+        window.onload = function() {
+            const storedImage = localStorage.getItem('uploadedImage');
+            const ultimaImagem = localStorage.getItem("ultimaImagem");
+            const ultimoNome = localStorage.getItem("ultimoNome");
+
+            if (ultimaImagem) {
+                document.getElementById("imageTextarea").value = ultimaImagem;
+                document.getElementById("fileNameInput").value = ultimoNome || "";
+                exibirImagem(ultimaImagem);
+            }
+
+            if (storedImage) {
+              const previewContainer = document.getElementById('previewContainer');
+             previewContainer.innerHTML = `<img src="${storedImage}" alt="Imagem preview" style="max-width: 100%; max-height: 300px;">`;
+            }
+        };
+
+    // window.onload = function() {
+    //     const storedImage = localStorage.getItem('uploadedImage');
+
+    //     if (storedImage) {
+    //         const previewContainer = document.getElementById('previewContainer');
+    //         previewContainer.innerHTML = `<img src="${storedImage}" alt="Imagem preview" style="max-width: 100%; max-height: 300px;">`;
+    //     }
+    // };
+
+
+
+    
+
     </script>
+
+    <style>
+
+       #previewContainer {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .preview-img {
+            width: 150px;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #000;
+        }
+
+    </style>
+
 </body>
 </html>
